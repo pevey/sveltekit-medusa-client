@@ -4,9 +4,11 @@ A client library for communicating with a Medusa ecommerce backend in SvelteKit
 
 [Documentation](https://pevey.com/sveltekit-medusa-client)
 
-> [Medusa](https://www.medusajs.com/) is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+If you are not familiar with Medusa, you can learn more on [the project web site](https://www.medusajs.com/).
 
-This client is designed to be used on the server.  Unlike the official medusa js client, this libary will not work in the browser.  This means you must make your calls to your Medusa backend from your storefront server, not from the client browser.  Calls to the library can be made from:
+> Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+
+This client is designed to be used on the server.  It cannot be exported to the browser.  This means you must make your calls to your Medusa backend from your storefront server, not from the client browser.  Calls to the library can be made from:
 
 * A handler in `hooks.server.js/ts`
 * A page load function in `+page.server.js/ts`
@@ -21,7 +23,7 @@ Create a new SvelteKit app if needed.  Then, install this package.
 
 ```bash
 
-npm i -D svelte-medusa-client
+npm i -D sveltekit-medusa-client
 
 ```
 
@@ -61,10 +63,10 @@ Then, on the corresponding `+page.svelte`, you can use the products data you exp
 </script>
 
 <ul>
-{#each products as {id, handle, ...rest} }
+{#each products as product}
    <li>
-      Product id: {id}<br>
-      Product handle: {handle}<br>
+      Product id: {product.id}<br>
+      Product handle: {product.handle}<br>
       {product.title}
    </li>
 {:else}
@@ -72,6 +74,8 @@ Then, on the corresponding `+page.svelte`, you can use the products data you exp
 {/each}
 <ul>
 ```
+
+## Using the Client as a Singleton
 
 One major drawback of the example above is that a new Medusa client is created for each page load.  
 You can prevent that by adding a small library in your project that creates a single shared client that can be imported where needed.
@@ -135,5 +139,7 @@ Medusa is under heavy development, and breaking changes do occur.  Once this lib
 
 For example:
 
-Medusa backend version: 1.8.2
-Corresponding client version will be: 1.8.2 (and, if necessary, 1.8.2b, 1.8.2c, etc)
+| Package | Version |
+| --- | --- |
+| Medusa backend | 1.8.2 |
+| Corresponding client  | 1.8.2 (and, if necessary, 1.8.2b, 1.8.2c, etc) |
