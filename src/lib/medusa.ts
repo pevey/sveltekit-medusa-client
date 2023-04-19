@@ -207,23 +207,26 @@ export class MedusaClient {
       // returns a user object
       return await this.query(locals, '/store/auth')
          .then((res:any) => res.json()).then((data:any) => data.customer)
-         .catch(() => null)
+         .catch(() => {})
    }
 
    async login(locals:App.Locals, cookies:Cookies, email:string, password:string) {
       // returns true or false based on success
       const response = await this.query(locals, '/store/auth', 'POST', { email, password })
-      if (response.ok && response.headers.get('set-cookie')) {
-         locals.user = await response.json().then((data:any) => data.customer)
-         locals.sid = cookie.parse(response.headers.get('set-cookie'))['connect.sid']
-         cookies.set('sid', locals.sid, {
-            path: '/',
-            maxAge: 60 * 60 * 24 * 400,
-            sameSite: 'strict',
-            httpOnly: true,
-            secure: true
-         })
-         return true
+      if (!response.ok) return false
+      else {
+         try {
+            locals.user = await response.json().then((data:any) => data.customer)
+            locals.sid = cookie.parse(response.headers.get('set-cookie'))['connect.sid']
+            cookies.set('sid', locals.sid, {
+               path: '/',
+               maxAge: 60 * 60 * 24 * 400,
+               sameSite: 'strict',
+               httpOnly: true,
+               secure: true
+            })
+            return true
+         } catch { return false }
       }
    }
 
@@ -359,17 +362,15 @@ export class MedusaClient {
    async addShippingAddress(locals:App.Locals, address:Address) {
       // returns true or false based on success
       if (!locals.user) { return false }
-      // @ts-ignore
       return await this.query(locals, `/store/customers/me/addresses`, 'POST', { address })
          .then((res:any) =>  res.ok )
          .catch(() => false)
    }
 
-   async updateShippingAddress(locals:App.Locals, address:Address) {
+   async updateShippingAddress(locals:App.Locals, addressId:string, address:Address) {
       // returns true or false based on success
       if (!locals.user) { return false }
-      // @ts-ignore
-      return await this.query(locals, `/store/customers/me/addresses/${address.id}`, 'POST', address)
+      return await this.query(locals, `/store/customers/me/addresses/${addressId}`, 'POST', address)
          .then((res:any) => res.ok)
          .catch(() => false)
    }
@@ -377,7 +378,6 @@ export class MedusaClient {
    async deleteAddress(locals:App.Locals, addressId:string) {
       // returns true or false based on success
       if (!locals.user) { return false }
-      // @ts-ignore
       return await this.query(locals, `/store/customers/me/addresses/${addressId}`, 'DELETE')
          .then((res:any) => res.ok)
          .catch(() => false)
@@ -386,7 +386,6 @@ export class MedusaClient {
    async getAddresses(locals:App.Locals) {
       // returns an array of address objects on success, otherwise false
       if (!locals.user) { return false }
-      // @ts-ignore
       return await this.query(locals, `/store/customers/me/addresses`)
          .then((res:any) => res.json()).then((data:any) => data.addresses)
          .catch(() => false)
