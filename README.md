@@ -103,7 +103,7 @@ export const load = async function () {
 
 ## Authentication
 
-Some methods in the library, like the `getProducts` method in the example above, need no authentication.  Other methods need more context, such as whether the requester is a logged in user, or whether they have an existing shopping cart.  The first argument passed to those methods is the special SvelteKit `locals` object.  Locals on the server work much like a page or session store in the browser.  They are a place to hold on to data related to this particular request that we may need somewhere else in the application before this request/response cycle is complete.
+Some methods in the library, like the `getAllProducts` method in the example above, need no authentication.  Other methods need more context, such as whether the requester is a logged in user, or whether they have an existing shopping cart.  The first argument passed to those methods is the special SvelteKit `locals` object.  Locals on the server work much like a page or session store in the browser.  They are a place to hold on to data related to this particular request that we may need somewhere else in the application before this request/response cycle is complete.
 
 Use the middleware method `handleRequest` from this library to handle customer authentication on every request with very little effort.  If the user is logged in, the user object will be available at `locals.user.` Middleware is added in SvelteKit via the hooks.server.js/ts file:
 
@@ -126,7 +126,6 @@ Now, we can invoke methods that require information about the user and the cart.
 import medusa from '$lib/server/medusa'
 
 export const load = async function ({ locals }) {
-
    return {
       cart: medusa.getCart(locals),
    }
