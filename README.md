@@ -29,7 +29,7 @@ npm i -D sveltekit-medusa-client
 
 You should set the location of your Medusa server as an environment variable.  For example:
 
-`/.env`
+`.env`
 
 ```bash
 MEDUSA_BACKEND_URL="http://localhost:9000"
@@ -127,7 +127,7 @@ import medusa from '$lib/server/medusa'
 
 export const load = async function ({ locals }) {
    return {
-      cart: medusa.getCart(locals),
+      cart: medusa.getCart(locals)
    }
 }
 ```

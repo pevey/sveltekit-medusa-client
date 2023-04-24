@@ -6,6 +6,7 @@
       "type": "git",
       "url": "https://github.com/pevey/sveltekit-medusa-client"
    },
+	"homepage": "https://pevey.com/sveltekit-medusa-client",
 	"author": "Lacey Pevey",
 	"license": "MIT",
 	"keywords": [
