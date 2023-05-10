@@ -310,10 +310,18 @@ export class MedusaClient {
          .catch(() => false)
    }
 
-   async updateCartAddress(locals:App.Locals, address:Address) {
+	async updateCartBillingAddress(locals:App.Locals, address:Address) {
       // returns a cart array on success, otherwise false
       if (!locals.cartid) { return false }
-      return await this.query(locals, `/store/carts/${locals.cartid}`, 'POST', address)
+      return await this.query(locals, `/store/carts/${locals.cartid}`, 'POST', { billing_address: address })
+         .then((res:any) => res.json()).then((data:any) => data.cart)
+         .catch(() => false)
+   }
+
+   async updateCartShippingAddress(locals:App.Locals, address:Address) {
+      // returns a cart array on success, otherwise false
+      if (!locals.cartid) { return false }
+      return await this.query(locals, `/store/carts/${locals.cartid}`, 'POST', { shipping_address: address })
          .then((res:any) => res.json()).then((data:any) => data.cart)
          .catch(() => false)
    }
@@ -355,7 +363,7 @@ export class MedusaClient {
       if (!locals.cartid) { return false }
       const reply = await this.query(locals, `/store/carts/${locals.cartid}/complete`, 'POST')
          .then((res:any) => res.json())
-         .catch(err => { return false })
+         .catch(() => false )
       return (reply.type === 'order') ? reply.data : false
    }
 
