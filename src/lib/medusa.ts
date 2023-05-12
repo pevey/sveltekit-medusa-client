@@ -414,6 +414,20 @@ export class MedusaClient {
          .catch(() => false)
    }
 
+	async requestResetPassword(email:string) {
+		// returns true or false based on success
+		return await this.query({}, '/store/customers/password-token', 'POST', { email })
+			.then((res:any) => res.ok)
+			.catch(() => false)
+	}
+
+	async resetPassword(email:string, password:string, token:string) {
+		// returns true or false based on success
+		return await this.query({}, '/store/customers/password-reset', 'POST', { email, password, token })
+			.then((res:any) => res.ok)
+			.catch(() => false)
+	}
+
    // @ts-ignore
    onlyUnique = (value, index, self) => self.indexOf(value) === index
 
