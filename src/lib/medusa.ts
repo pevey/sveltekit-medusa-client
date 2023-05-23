@@ -73,20 +73,33 @@ export interface Address {
    address_2?: string,
    city: string,
    country_code: string,
-   province?: string,
+   province: string,
    postal_code: string
    metadata?: object
 }
 
 export class MedusaClient {
    private url: string
+	private options: any
+	private headers: any
 
-   constructor(url: string) {
+   constructor(url: string, options: any = {}) {
       this.url = url
+		this.options = options
+		this.headers = this.options?.headers || {}
    }
 
    async query(locals:App.Locals, path:string, method:string ='GET', body:object = {}) {
-      const headers = locals.sid ? { 'Cookie': `connect.sid=${locals.sid}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' }
+		let headers: any = {}
+		for (const [key, value] of Object.entries(this.headers)) {
+			headers[key] = value
+		}
+		if (locals.sid) {
+			headers['Cookie'] = `connect.sid=${locals.sid}`
+		}
+		if (Object.keys(body).length != 0) {
+			headers['Content-Type'] = 'application/json'
+		}
       return await superFetch(`${this.url}${path}`, {
          timeout: 5000,
          retry: 0,
@@ -115,7 +128,7 @@ export class MedusaClient {
       if (!q) { return Array() }
       return await this.query({}, '/store/products/search', 'POST', { q })
          .then((res:any) => res.json()).then((data:any) => data.hits)
-         .catch(() => Array())
+         .catch(() => null)
    }
 
    async getAllProducts(options:ProductRetrievalOptions = {}) {
@@ -127,46 +140,47 @@ export class MedusaClient {
       // TODO: handle options
       return await this.query({}, `/store/products`)
          .then((res:any) => res.json()).then((data:any) => data.products)
-         .catch(() => Array())
+         .catch(() => null)
    }
 
    async getCollections(options:CollectionRetrievalOptions = {}) {
-      // returns an array of collection objects on success, otherwise an empty array
+      // returns an array of collection objects on success
       // TODO: handle options
       return await this.query({}, '/store/collections')
          .then((res:any) => res.json()).then((data:any) => data.collections)
-         .catch(() => Array())
+         .catch(() => null)
    }
 
    async getCollection(handle:string) {
-      // returns a collection object on success, otherwise false
+      // returns a collection object on success
       return await this.query({}, `/store/collections?handle[]=${handle}`)
          .then((res:any) => res.json()).then((data:any) => data.collections[0])
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async getCollectionProducts(id:string) {
-      // returns an array of product objects on success, otherwise false
+      // returns an array of product objects on success
       return await this.query({}, `/store/products?collection_id[]=${id}`)
          .then((res:any) => res.json()).then((data:any) => data.products)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async getCollectionProductsByHandle(handle:string) {
-      // returns an array of product objects on success, otherwise false
+      // returns an array of product objects on success
       // requires a custom api route to work
       // returns ALL products in a collection, regardless of region, customer group, or stock level
       // Does NOT return full product data
       return await this.query({}, `/store/collection/${handle}`)
          .then((res:any) => res.json()).then((data:any) => data.collection).then((data:any) => data.products)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async getProduct(handle:string) {
-      // returns a product object on success, otherwise false
+      // returns a product object on success
       let product = await this.query({}, `/store/products?handle=${handle}`)
          .then((res:any) => res.json()).then((data:any) => data.products[0])
-         .catch(() => { return false })
+         .catch(() => null)
+		if (!product) { return null }
       for (let option of product.options) {
          option.filteredValues = this.filteredValues(option)
       }
@@ -174,22 +188,24 @@ export class MedusaClient {
    }
 
    async getReviews(productId:string, options:ReviewRetrievalOptions = {}) {
-      // returns an array of review objects on success, otherwise an empty array
+      // returns an array of review objects on success
       // options - page = 1, limit = 10, sort = 'created_at', order = 'desc', search = null
       // TODO: handle options
       return await this.query({}, `/store/products/${productId}/reviews`)
          .then((res:any) => res.json()).then((data:any) => data.product_reviews)
-         .catch(() => Array())
+         .catch(() => null)
    }
 
    async getReview(reviewId:string) {
-      // returns a review object on success, otherwise false
+      // returns a review object on success
       return await this.query({}, `/store/reviews/${reviewId}`)
          .then((res:any) => res.json()).then((data:any) => data.product_review)
-         .catch(() => false)
+         .catch(() => null)
    }
 
+	// CHANGE TO RETURN THE REVIEW OBJECT ON SUCCESS
    async addReview(locals:App.Locals, review:Review) {
+		// returns true or false based on success
       // @ts-ignore
       review.customer_id = locals.user.id
       return await this.query(locals, `/store/products/${review.product_id}/reviews`, 'POST', review)
@@ -198,16 +214,17 @@ export class MedusaClient {
    }
 
    async updateReview(locals:App.Locals, reviewId:string, review:Review) {
+		// returns a review object on success, or null on failure
       return await this.query(locals, `/store/reviews/${reviewId}`, 'POST', review)
       .then((res:any) => res.ok)
-      .catch(() => false)
+      .catch(() => null)
    }
 
    async getCustomer(locals:App.Locals) {
-      // returns a user object
+      // returns a user object if found, or null if not
       return await this.query(locals, '/store/auth')
          .then((res:any) => res.json()).then((data:any) => data.customer)
-         .catch(() => {})
+         .catch(() => null)
    }
 
    async login(locals:App.Locals, cookies:Cookies, email:string, password:string) {
@@ -254,20 +271,20 @@ export class MedusaClient {
    }
 
    async getCart(locals:App.Locals) {
-      // returns a cart array on success, otherwise an empty array
+      // returns a cart array on success, otherwise null
       if (locals.cartid) {
          return await this.query(locals, `/store/carts/${locals.cartid}`)
             .then((res:any) => res.json()).then((data:any) => data.cart)
-            .catch(() => Array())
+            .catch(() => null)
       } else if (locals.user) {
          // todo: create new endpoint to get cart by user id
          return Array()
-      } else return Array()
+      } else return null
    }
    
    async addToCart(locals:App.Locals, cookies:Cookies, variantId:string, quantity:number = 1) {
-      // returns a cart array on success, otherwise false
-      if (!variantId) { return false }
+      // returns a cart array on success, otherwise null
+      if (!variantId) { return null }
 
       // try adding to existing cart
       if (locals.cartid) { 
@@ -281,7 +298,7 @@ export class MedusaClient {
       // if no cart or add to cart fails, try to create new cart
       const cart = await this.query(locals, '/store/carts', 'POST', { items: [{ variant_id: variantId, quantity: quantity }] })
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(err => { return false })
+         .catch(() => null )
       cookies.set('cartid', cart.id, {
          path: '/',
          maxAge: 60 * 60 * 24 * 400,
@@ -295,75 +312,75 @@ export class MedusaClient {
    }
 
    async removeFromCart(locals:App.Locals, itemId:string) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid || !itemId) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid || !itemId) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}/line-items/${itemId}`, 'DELETE')
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async updateCart(locals:App.Locals, itemId:string, quantity:number) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid || !itemId || !quantity) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid || !itemId || !quantity) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}/line-items/${itemId}`, 'POST', { quantity: quantity })
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
 	async updateCartBillingAddress(locals:App.Locals, address:Address) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}`, 'POST', { billing_address: address })
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async updateCartShippingAddress(locals:App.Locals, address:Address) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}`, 'POST', { shipping_address: address })
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async getShippingOptions(locals:App.Locals) {
-      // returns an array of shipping option objects on success, otherwise false
+      // returns an array of shipping option objects on success, otherwise null
       if (!locals.cartid) { return false }
       return await this.query(locals, `/store/shipping-options/${locals.cartid}`)
          .then((res:any) => res.json()).then((data:any) => data.shipping_options)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async selectShippingOption(locals:App.Locals, shippingOptionId:string) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid || !shippingOptionId) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid || !shippingOptionId) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}/shipping-methods`, 'POST', { option_id: shippingOptionId })
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async createPaymentSessions(locals:App.Locals) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}/payment-sessions`, 'POST')
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async selectPaymentSession(locals:App.Locals, providerId:string) {
-      // returns a cart array on success, otherwise false
-      if (!locals.cartid) { return false }
+      // returns a cart array on success, otherwise null
+      if (!locals.cartid) { return null }
       return await this.query(locals, `/store/carts/${locals.cartid}/payment-session`, 'POST', { provider_id: providerId })
          .then((res:any) => res.json()).then((data:any) => data.cart)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async completeCart(locals:App.Locals) {
-      // returns an order object on success, otherwise false
-      if (!locals.cartid) { return false }
+      // returns an order object on success, otherwise null
+      if (!locals.cartid) { return null }
       const reply = await this.query(locals, `/store/carts/${locals.cartid}/complete`, 'POST')
          .then((res:any) => res.json())
-         .catch(() => false )
+         .catch(() => null )
       return (reply.type === 'order') ? reply.data : false
    }
 
@@ -392,18 +409,18 @@ export class MedusaClient {
    }
 
    async getAddresses(locals:App.Locals) {
-      // returns an array of address objects on success, otherwise false
-      if (!locals.user) { return false }
+      // returns an array of address objects on success, otherwise null
+      if (!locals.user) { return null }
       return await this.query(locals, `/store/customers/me/addresses`)
          .then((res:any) => res.json()).then((data:any) => data.addresses)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async getOrder(locals:App.Locals, id:string) {
-      // returns an order object on success, otherwise false
+      // returns an order object on success, otherwise null
       return await this.query(locals, `/store/orders/${id}`)
          .then((res:any) => res.json()).then((data:any) => data.order)
-         .catch(() => false)
+         .catch(() => null)
    }
 
    async editCustomer(locals:App.Locals, customer:Customer) {
