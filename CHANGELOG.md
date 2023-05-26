@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.11.0-b
+
+### Patch Changes
+
+- feat: Added retrieval options for products and collections (limit, offset, etc.).  These match the API options available for each entity.
+- getAllProducts() renamed to getProducts()
+
 ## 1.11.0
 
 ### Patch Changes

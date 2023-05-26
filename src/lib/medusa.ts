@@ -2,28 +2,21 @@ import superFetch from 'sveltekit-superfetch'
 import cookie from 'cookie'
 import type { Cookies, RequestEvent } from '@sveltejs/kit'
 
-export interface retrievalOptions {
-   page?: number,
-   limit?: number,
-   sort?: string, //change to option set
-   order?: string, //change to option set
-   search?: string
+export interface ProductRetrievalOptions {
+	limit?: number,
+   offset?: number,
+   order?: string,
+   expand?: string,
+   fields?: string,
+	query?: string
 }
 
-export interface ProductRetrievalOptions extends retrievalOptions {
-   // returns an array of product objects
-   // options - page = 1, limit = 10, sort = 'created_at', order = 'desc', search = null
-   // let url = `${MEDUSA_BACKEND_URL}/store/products?page=${page}&limit=${limit}&sort=${sort}&order=${order}`
-   // if (search) { url += `&search=${search}` }
-   // add expland option
-   expand?: Array<string>
+export interface CollectionRetrievalOptions {
+	limit?: number,
+   offset?: number,
 }
 
-export interface CollectionRetrievalOptions extends retrievalOptions {
-
-}
-
-export interface ReviewRetrievalOptions extends retrievalOptions {
+export interface ReviewRetrievalOptions {
 
 }
 
@@ -81,12 +74,18 @@ export interface Address {
 export class MedusaClient {
    private url: string
 	private options: any
+	private retry: number
+	private timeout: number
 	private headers: any
+	private jwt: string
 
    constructor(url: string, options: any = {}) {
       this.url = url
 		this.options = options
+		this.retry = this.options?.retry || 0
+		this.timeout = this.options?.timeout || 5000
 		this.headers = this.options?.headers || {}
+		this.jwt = ''
    }
 
    async query(locals:App.Locals, path:string, method:string ='GET', body:object = {}) {
@@ -101,13 +100,25 @@ export class MedusaClient {
 			headers['Content-Type'] = 'application/json'
 		}
       return await superFetch(`${this.url}${path}`, {
-         timeout: 5000,
-         retry: 0,
+         timeout: this.timeout,
+         retry: this.retry,
          method,
          headers,
          body: (Object.keys(body).length != 0) ? JSON.stringify(body) : null
       })
    }
+
+	buildQuery(base: string, options:any = {}) {
+		let queryString = base
+		if (Object.keys(options).length !== 0) queryString += '?'
+		if (options.limit) queryString += `limit=${options.limit}&`
+		if (options.offset) queryString += `offset=${options.offset}&`
+		if (options.order) queryString += `order=${options.order}&`
+		if (options.expand) queryString += `expand=${encodeURIComponent(options.expand)}&`
+		if (options.fields) queryString += `fields=${encodeURIComponent(options.fields)}&`
+		if (options.query) queryString += `${encodeURIComponent(options.query)}&`
+		return queryString
+	}
 
    async handleRequest(event:RequestEvent) {
       // this middleware function is called by src/hooks.server.ts or src/hooks.server.js
@@ -131,22 +142,18 @@ export class MedusaClient {
          .catch(() => null)
    }
 
-   async getAllProducts(options:ProductRetrievalOptions = {}) {
+   async getProducts(options:ProductRetrievalOptions = {}) {
       // returns an array of product objects
-      // options - page = 1, limit = 10, sort = 'created_at', order = 'desc', search = null
-      // let url = `${MEDUSA_BACKEND_URL}/store/products?page=${page}&limit=${limit}&sort=${sort}&order=${order}`
-      // if (search) { url += `&search=${search}` }
-      // add expland option
-      // TODO: handle options
-      return await this.query({}, `/store/products`)
+		const queryString = this.buildQuery('/store/products', options)
+      return await this.query({}, queryString)
          .then((res:any) => res.json()).then((data:any) => data.products)
          .catch(() => null)
    }
 
    async getCollections(options:CollectionRetrievalOptions = {}) {
       // returns an array of collection objects on success
-      // TODO: handle options
-      return await this.query({}, '/store/collections')
+		const queryString = this.buildQuery('/store/collections', options)
+      return await this.query({}, queryString)
          .then((res:any) => res.json()).then((data:any) => data.collections)
          .catch(() => null)
    }
@@ -158,20 +165,12 @@ export class MedusaClient {
          .catch(() => null)
    }
 
-   async getCollectionProducts(id:string) {
+   async getCollectionProducts(id:string, options:ProductRetrievalOptions = {}) {
       // returns an array of product objects on success
-      return await this.query({}, `/store/products?collection_id[]=${id}`)
+		let base = `/store/products?collection_id[]=${id}`
+		const queryString = this.buildQuery(base, options)
+      return await this.query({}, queryString)
          .then((res:any) => res.json()).then((data:any) => data.products)
-         .catch(() => null)
-   }
-
-   async getCollectionProductsByHandle(handle:string) {
-      // returns an array of product objects on success
-      // requires a custom api route to work
-      // returns ALL products in a collection, regardless of region, customer group, or stock level
-      // Does NOT return full product data
-      return await this.query({}, `/store/collection/${handle}`)
-         .then((res:any) => res.json()).then((data:any) => data.collection).then((data:any) => data.products)
          .catch(() => null)
    }
 
