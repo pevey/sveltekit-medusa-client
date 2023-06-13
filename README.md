@@ -125,9 +125,9 @@ Now, we can invoke methods that require information about the user and the cart.
 ```js
 import medusa from '$lib/server/medusa'
 
-export const load = async function ({ locals }) {
+export const load = async function ({ locals, cookies }) {
    return {
-      cart: medusa.getCart(locals)
+      cart: medusa.getCustomer(locals, cookies)
    }
 }
 ```
