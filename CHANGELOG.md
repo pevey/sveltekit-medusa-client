@@ -4,8 +4,20 @@
 
 ### Patch Changes
 
-- Session cookie now expiration now matches any custom ttl set in medusa.config.js
-- Session cookie now support rolling:true (refresh) session option in medusa.config.js
+- Session cookie expiration now matches any custom ttl set in medusa.config.js
+- Session cookie now supports rolling:true (refresh) session option in medusa.config.js
+- Options object passed to contructor can now include persistentCart (bool) which if true will attempt to load customer's existing cart across multiple browsers or devices.  This requires a custom API route to work (/store/customer/me/cart) and defaults to false.  The API route should take the general form of:
+```
+	router.use("/store/customers/me/cart", authenticateCustomer())
+	router.get("/store/customers/me/cart", cors(storeCorsOptions), async (req, res) => {
+		if (req.user && req.user.userId) {
+			const cartService = req.scope.resolve("cartService")
+			const cart = await cartService.retrieveByCustomerId(req.user.userId)
+			return res.json({ cart })
+		}
+		return res.json({ cart: null })
+	})
+```
 
 ## 1.11.0-b
 

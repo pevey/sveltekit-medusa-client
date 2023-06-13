@@ -77,6 +77,7 @@ export class MedusaClient {
 	private retry: number
 	private timeout: number
 	private headers: any
+	private persistentCart: boolean = false
 
    constructor(url: string, options: any = {}) {
       this.url = url
@@ -84,6 +85,7 @@ export class MedusaClient {
 		this.retry = this.options?.retry || 0
 		this.timeout = this.options?.timeout || 5000
 		this.headers = this.options?.headers || {}
+		this.persistentCart = this.options?.persistentCart || false
    }
 
    async query(locals:App.Locals, path:string, method:string ='GET', body:object = {}) {
@@ -289,8 +291,10 @@ export class MedusaClient {
             .then((res:any) => res.json()).then((data:any) => data.cart)
             .catch(() => null)
       } else if (locals.user) {
-         // todo: create new endpoint to get cart by user id
-         return Array()
+			if (!this.persistentCart) return null
+         else return await this.query(locals, `/store/customers/me/cart`)
+            .then((res:any) => res.json()).then((data:any) => data.cart)
+            .catch(() => null)
       } else return null
    }
    
