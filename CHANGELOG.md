@@ -11,12 +11,13 @@
 ```
 	router.use("/store/customers/me/cart", authenticateCustomer())
 	router.get("/store/customers/me/cart", cors(storeCorsOptions), async (req, res) => {
-		if (req.user && req.user.userId) {
+		if (req.user && req.user.customer_id) {
 			const cartService = req.scope.resolve("cartService")
-			const cart = await cartService.retrieveByCustomerId(req.user.userId)
+			const cart = await cartService.retrieveByCustomerId(req.user.customer_id)
 			return res.json({ cart })
+		} else {
+			return res.status(404).json({ cart: null })
 		}
-		return res.json({ cart: null })
 	})
 ```
 

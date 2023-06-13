@@ -128,8 +128,9 @@ export class MedusaClient {
       else event.locals.sid = ''
    
       event.locals.cartid = event.cookies.get('cartid')
-      if (event.locals.cartid) event.locals.cart = await this.getCart(event.locals)
-      else event.locals.cartid = ''
+      let cart: any = await this.getCart(event.locals, event.cookies)
+		event.locals.cartid = cart?.id || ''
+		event.locals.cart = cart || null
 
       return event
    }
@@ -284,18 +285,32 @@ export class MedusaClient {
       }
    }
 
-   async getCart(locals:App.Locals) {
+   async getCart(locals:App.Locals, cookies:Cookies) {
       // returns a cart array on success, otherwise null
+		let cart
       if (locals.cartid) {
-         return await this.query(locals, `/store/carts/${locals.cartid}`)
+      	cart = await this.query(locals, `/store/carts/${locals.cartid}`)
             .then((res:any) => res.json()).then((data:any) => data.cart)
             .catch(() => null)
-      } else if (locals.user) {
-			if (!this.persistentCart) return null
-         else return await this.query(locals, `/store/customers/me/cart`)
-            .then((res:any) => res.json()).then((data:any) => data.cart)
-            .catch(() => null)
-      } else return null
+      } else if (this.persistentCart && locals.user) {
+			cart = await this.query(locals, `/store/customers/me/cart`)
+				.then((res:any) => res.json()).then((data:any) => data.cart)
+				.catch(() => null)
+			if (cart.id) {
+				cookies.set('cartid', cart.id, {
+					path: '/',
+					maxAge: 60 * 60 * 24 * 400,
+					sameSite: 'strict',
+					httpOnly: true,
+					secure: true
+				})
+			}
+      }
+		if (locals.cartid && !cart) {
+			locals.cartid = ''
+			cookies.delete('cartid')
+		}
+		return cart
    }
    
    async addToCart(locals:App.Locals, cookies:Cookies, variantId:string, quantity:number = 1) {
