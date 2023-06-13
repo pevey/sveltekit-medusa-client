@@ -6,6 +6,7 @@
 
 - Session cookie expiration now matches any custom ttl set in medusa.config.js
 - Session cookie now supports rolling:true (refresh) session option in medusa.config.js
+- Options object passed to constructor now supports custom timeout (in milliseconds) and retry settings.
 - Options object passed to contructor can now include persistentCart (bool) which if true will attempt to load customer's existing cart across multiple browsers or devices.  This requires a custom API route to work (/store/customer/me/cart) and defaults to false.  The API route should take the general form of:
 ```
 	router.use("/store/customers/me/cart", authenticateCustomer())
