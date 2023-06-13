@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.12.0
+
+### Patch Changes
+
+- Session cookie now expiration now matches any custom ttl set in medusa.config.js
+- Session cookie now support rolling:true (refresh) session option in medusa.config.js
+
 ## 1.11.0-b
 
 ### Patch Changes

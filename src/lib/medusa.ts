@@ -77,7 +77,6 @@ export class MedusaClient {
 	private retry: number
 	private timeout: number
 	private headers: any
-	private jwt: string
 
    constructor(url: string, options: any = {}) {
       this.url = url
@@ -85,7 +84,6 @@ export class MedusaClient {
 		this.retry = this.options?.retry || 0
 		this.timeout = this.options?.timeout || 5000
 		this.headers = this.options?.headers || {}
-		this.jwt = ''
    }
 
    async query(locals:App.Locals, path:string, method:string ='GET', body:object = {}) {
@@ -124,7 +122,7 @@ export class MedusaClient {
       // this middleware function is called by src/hooks.server.ts or src/hooks.server.js
 
       event.locals.sid = event.cookies.get('sid')
-      if (event.locals.sid) event.locals.user = await this.getCustomer(event.locals) 
+      if (event.locals.sid) event.locals.user = await this.getCustomer(event.locals, event.cookies) 
       else event.locals.sid = ''
    
       event.locals.cartid = event.cookies.get('cartid')
@@ -219,11 +217,24 @@ export class MedusaClient {
       .catch(() => null)
    }
 
-   async getCustomer(locals:App.Locals) {
+   async getCustomer(locals:App.Locals, cookies:Cookies) {
       // returns a user object if found, or null if not
-      return await this.query(locals, '/store/auth')
-         .then((res:any) => res.json()).then((data:any) => data.customer)
-         .catch(() => null)
+      const response = await this.query(locals, '/store/auth')
+		try {
+			locals.sid = cookie.parse(response.headers.get('set-cookie'))['connect.sid']
+			let expires = new Date(cookie.parse(response.headers.get('set-cookie'))['Expires'])
+			let maxAge = Math.floor((expires.getTime() - Date.now()) / 1000)
+			cookies.set('sid', locals.sid, {
+				path: '/',
+				maxAge: maxAge,
+				sameSite: 'strict',
+				httpOnly: true,
+				secure: true
+			})
+			return await response.json().then((data:any) => data.customer)
+		} catch (e) {
+			return null
+		}
    }
 
    async login(locals:App.Locals, cookies:Cookies, email:string, password:string) {
@@ -234,9 +245,11 @@ export class MedusaClient {
          try {
             locals.user = await response.json().then((data:any) => data.customer)
             locals.sid = cookie.parse(response.headers.get('set-cookie'))['connect.sid']
+				let expires = new Date(cookie.parse(response.headers.get('set-cookie'))['Expires'])
+				let maxAge = Math.floor((expires.getTime() - Date.now()) / 1000)
             cookies.set('sid', locals.sid, {
                path: '/',
-               maxAge: 60 * 60 * 24 * 400,
+               maxAge: maxAge,
                sameSite: 'strict',
                httpOnly: true,
                secure: true
