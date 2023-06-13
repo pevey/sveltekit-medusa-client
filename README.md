@@ -127,7 +127,7 @@ import medusa from '$lib/server/medusa'
 
 export const load = async function ({ locals, cookies }) {
    return {
-      cart: medusa.getCustomer(locals, cookies)
+      cart: medusa.getCart(locals, cookies)
    }
 }
 ```
