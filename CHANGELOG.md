@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.12.0-b
+
+### Patch Changes
+
+- getCustomer function: Move fetch request to get customer session back inside try block to enable smoother error handling.  It was left outside of the block by accident after debugging.
+
 ## 1.12.0
 
 ### Patch Changes

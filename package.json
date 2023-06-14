@@ -1,6 +1,6 @@
 {
 	"name": "sveltekit-medusa-client",
-	"version": "1.12.0",
+	"version": "1.12.0-b",
 	"description": "A client library for communicating with a Medusa ecommerce backend in SvelteKit",
 	"repository": {
       "type": "git",
