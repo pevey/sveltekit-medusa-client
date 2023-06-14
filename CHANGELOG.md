@@ -5,6 +5,8 @@
 ### Patch Changes
 
 - getCustomer function: Move fetch request to get customer session back inside try block to enable smoother error handling.  It was left outside of the block by accident after debugging.
+- Fixed bug with new persistent cart feature that caused an error when user logged in and did not already have any cart sessions
+- Fixed bug in the first login after registering a user that caused register to return false even though it was successful
 
 ## 1.12.0
 

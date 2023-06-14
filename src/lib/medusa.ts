@@ -276,13 +276,9 @@ export class MedusaClient {
 	async register (locals:App.Locals, cookies:Cookies, user:User) {
 		// returns true or false based on success
 		const { email, password } = user
-		const response = await this.query(locals, '/store/customers', 'POST', user)
-			.catch(() => { return false })
-console.log(response)
+		const response = await this.query(locals, '/store/customers', 'POST', user).catch(() => { return false })
 		if (response.ok) {
-			return await this.login(locals, cookies, email, password)
-				.then((res:any) => res.ok)
-				.catch(() => false)
+			return await this.login(locals, cookies, email, password).catch(() => false)
 		}
 	}
 
@@ -297,7 +293,7 @@ console.log(response)
 			cart = await this.query(locals, `/store/customers/me/cart`)
 				.then((res:any) => res.json()).then((data:any) => data.cart)
 				.catch(() => null)
-			if (cart.id) {
+			if (cart) {
 				cookies.set('cartid', cart.id, {
 					path: '/',
 					maxAge: 60 * 60 * 24 * 400,
