@@ -17,16 +17,16 @@
 - Options object passed to constructor now supports custom timeout (in milliseconds) and retry settings.
 - Options object passed to contructor can now include persistentCart (bool) which if true will attempt to load customer's existing cart across multiple browsers or devices.  This requires a custom API route to work (/store/customer/me/cart) and defaults to false.  The API route should take the general form of:
 ```
-	router.use("/store/customers/me/cart", authenticateCustomer())
-	router.get("/store/customers/me/cart", cors(storeCorsOptions), async (req, res) => {
-		if (req.user && req.user.customer_id) {
-			const cartService = req.scope.resolve("cartService")
-			const cart = await cartService.retrieveByCustomerId(req.user.customer_id)
-			return res.json({ cart })
-		} else {
-			return res.status(404).json({ cart: null })
-		}
-	})
+   router.use("/store/customers/me/cart", authenticateCustomer())
+   router.get("/store/customers/me/cart", cors(storeCorsOptions), async (req, res) => {
+      if (req.user && req.user.customer_id) {
+         const cartService = req.scope.resolve("cartService")
+         const cart = await cartService.retrieveByCustomerId(req.user.customer_id)
+         return res.json({ cart })
+      } else {
+         return res.status(404).json({ cart: null })
+      }
+   })
 ```
 
 ## 1.11.0-b
