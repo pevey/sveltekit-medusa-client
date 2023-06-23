@@ -174,7 +174,7 @@ export class MedusaClient {
       // returns true or false based on success
       const response = await this.query(locals, '/store/auth', 'POST', { email, password })
       if (!response.ok) return false
-      if (await this.parseAuthCookie(response.headers?.getSetCookie(), locals, cookies)) return true
+      return await this.parseAuthCookie(response.headers?.getSetCookie(), locals, cookies).catch(() => false)
    }
 
    async logout(locals:App.Locals, cookies:Cookies) {
