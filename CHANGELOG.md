@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.12.1
+
+### Patch Changes
+
+- update method of parsing set-cookie headers to account for other headers being set other than the Medusa connect.sid session header
+
 ## 1.12.0-b
 
 ### Patch Changes

@@ -135,6 +135,68 @@ export class MedusaClient {
       return event
    }
 
+   async parseAuthCookie(setCookie:[] = [], locals:App.Locals , cookies:Cookies) {
+      try {
+         for (let rawCookie of setCookie) {
+            let parsedCookie = cookie.parse(rawCookie)
+            if (parsedCookie['connect.sid']) {
+               locals.sid = parsedCookie['connect.sid']
+               let expires = new Date(parsedCookie['Expires'])
+               let maxAge = Math.floor((expires.getTime() - Date.now()) / 1000)
+               cookies.set('sid', locals.sid, {
+                  path: '/',
+                  maxAge: maxAge,
+                  sameSite: 'strict',
+                  httpOnly: true,
+                  secure: true
+               })
+               return true
+            }
+         }
+      } catch (e) {
+         console.log(e)
+         return false
+      }
+   }
+
+   async getCustomer(locals:App.Locals, cookies:Cookies) {
+      // returns a user object if found, or null if not
+      try {
+         const response = await this.query(locals, '/store/auth')
+         await this.parseAuthCookie(response.headers.getSetCookie(), locals, cookies)
+         return await response.json().then((data:any) => data.customer)
+      } catch (e) {
+         return null
+      }
+   }
+
+   async login(locals:App.Locals, cookies:Cookies, email:string, password:string) {
+      // returns true or false based on success
+      const response = await this.query(locals, '/store/auth', 'POST', { email, password })
+      if (!response.ok) return false
+      if (await this.parseAuthCookie(response.headers?.getSetCookie(), locals, cookies)) return true
+   }
+
+   async logout(locals:App.Locals, cookies:Cookies) {
+      // returns true or false based on success
+      await this.query(locals, '/store/auth', 'DELETE')
+         .then((res:any) => res.ok)
+         .catch(() => false)
+      locals.sid = ''
+      locals.user = {}
+      cookies.delete('sid')
+      return true
+   }
+
+   async register (locals:App.Locals, cookies:Cookies, user:User) {
+      // returns true or false based on success
+      const { email, password } = user
+      const response = await this.query(locals, '/store/customers', 'POST', user).catch(() => { return false })
+      if (response.ok) {
+         return await this.login(locals, cookies, email, password).catch(() => false)
+      }
+   }
+
    async getSearchResults(q:string) {
       // returns an array of hits, if any
       if (!q) { return Array() }
@@ -218,68 +280,6 @@ export class MedusaClient {
       return await this.query(locals, `/store/reviews/${reviewId}`, 'POST', review)
       .then((res:any) => res.ok)
       .catch(() => null)
-   }
-
-   async getCustomer(locals:App.Locals, cookies:Cookies) {
-      // returns a user object if found, or null if not
-      try {
-         const response = await this.query(locals, '/store/auth')
-         locals.sid = cookie.parse(response.headers.get('set-cookie'))['connect.sid']
-         let expires = new Date(cookie.parse(response.headers.get('set-cookie'))['Expires'])
-         let maxAge = Math.floor((expires.getTime() - Date.now()) / 1000)
-         cookies.set('sid', locals.sid, {
-            path: '/',
-            maxAge: maxAge,
-            sameSite: 'strict',
-            httpOnly: true,
-            secure: true
-         })
-         return await response.json().then((data:any) => data.customer)
-      } catch (e) {
-         return null
-      }
-   }
-
-   async login(locals:App.Locals, cookies:Cookies, email:string, password:string) {
-      // returns true or false based on success
-      const response = await this.query(locals, '/store/auth', 'POST', { email, password })
-      if (!response.ok) return false
-      else {
-         try {
-            locals.user = await response.json().then((data:any) => data.customer)
-            locals.sid = cookie.parse(response.headers.get('set-cookie'))['connect.sid']
-            let expires = new Date(cookie.parse(response.headers.get('set-cookie'))['Expires'])
-            let maxAge = Math.floor((expires.getTime() - Date.now()) / 1000)
-            cookies.set('sid', locals.sid, {
-               path: '/',
-               maxAge: maxAge,
-               sameSite: 'strict',
-               httpOnly: true,
-               secure: true
-            })
-            return true
-         } catch { return false }
-      }
-   }
-
-   async logout(locals:App.Locals, cookies:Cookies) {
-      // returns true or false based on success
-      await this.query(locals, '/store/auth', 'DELETE')
-         .then((res:any) => res.ok)
-         .catch(() => false)
-      locals.sid = ''
-      locals.user = {}
-      cookies.delete('sid')
-      return true
-   }
-
-   async register (locals:App.Locals, cookies:Cookies, user:User) {
-      // returns true or false based on success
-      const { email, password } = user
-      const response = await this.query(locals, '/store/customers', 'POST', user).catch(() => { return false })
-      if (response.ok) {
-         return await this.login(locals, cookies, email, password).catch(() => false)
-      }
    }
 
    async getCart(locals:App.Locals, cookies:Cookies) {
