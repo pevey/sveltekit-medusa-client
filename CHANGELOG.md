@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.12.1-c
+
+### Patch Changes
+
+- Compatibility with latest medusa-plugin-ratings v1.3
+
 ## 1.12.1-b
 
 ### Patch Changes

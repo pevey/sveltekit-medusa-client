@@ -258,6 +258,15 @@ export class MedusaClient {
          .catch(() => null)
    }
 
+   async getCustomerReviews(locals:App.Locals, options:ReviewRetrievalOptions = {}) {
+      // returns an array of review objects on success
+      // options - page = 1, limit = 10, sort = 'created_at', order = 'desc', search = null
+      // TODO: handle options
+      return await this.query(locals, `/store/customers/me/reviews`)
+         .then((res:any) => res.json()).then((data:any) => data.product_reviews)
+         .catch(() => null)
+   }
+
    async getReview(reviewId:string) {
       // returns a review object on success
       return await this.query({}, `/store/reviews/${reviewId}`)
@@ -269,7 +278,6 @@ export class MedusaClient {
    async addReview(locals:App.Locals, review:Review) {
       // returns true or false based on success
       // @ts-ignore
-      review.customer_id = locals.user.id
       return await this.query(locals, `/store/products/${review.product_id}/reviews`, 'POST', review)
       .then((res:any) => res.ok)
       .catch(() => false)
