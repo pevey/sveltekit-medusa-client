@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.13.0
+
+### Patch Changes
+
+- Added typing for product-related functions.  Will add typing for Users, Carts, and other return values as Medusa team moves them over to @medusajs/types package.
+- Fixed bug were getCart function could return a cart that had been completed on a different device if persistentCart was set to true.
+- Versioning changed.  Version numbers will now follow semantic versioning and no longer mirror medusa backend versioning.
+
 ## 1.12.1-c
 
 ### Patch Changes

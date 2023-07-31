@@ -131,14 +131,3 @@ export const load = async function ({ locals, cookies }) {
    }
 }
 ```
-
-## Versioning
-
-Medusa is under heavy development, and breaking changes do occur.  Once this library achieves release candidate stage, versioning will match the corresponding @medusajs/medusa version number the library is intended to be used with.
-
-For example:
-
-| Package | Version |
-| --- | --- |
-| Medusa backend | 1.8.2 |
-| Corresponding client  | 1.8.2 (and, if necessary, 1.8.2b, 1.8.2c, etc) |

@@ -1,6 +1,14 @@
 import superFetch from 'sveltekit-superfetch'
 import cookie from 'cookie'
 import type { Cookies, RequestEvent } from '@sveltejs/kit'
+import type { ProductDTO } from '@medusajs/types'
+
+export interface ClientOptions {
+   retry?: number,
+   timeout?: number,
+   headers?: {},
+   persistentCart?: boolean
+}
 
 export interface ProductRetrievalOptions {
    limit?: number,
@@ -79,7 +87,7 @@ export class MedusaClient {
    private headers: any
    private persistentCart: boolean = false
 
-   constructor(url: string, options: any = {}) {
+   constructor(url: string, options: ClientOptions = {}) {
       this.url = url
       this.options = options
       this.retry = this.options?.retry || 0
@@ -205,7 +213,7 @@ export class MedusaClient {
          .catch(() => null)
    }
 
-   async getProducts(options:ProductRetrievalOptions = {}) {
+   async getProducts(options:ProductRetrievalOptions = {}): Promise<ProductDTO[]|null> {
       // returns an array of product objects
       const queryString = this.buildQuery('/store/products', options)
       return await this.query({}, queryString)
@@ -228,7 +236,7 @@ export class MedusaClient {
          .catch(() => null)
    }
 
-   async getCollectionProducts(id:string, options:ProductRetrievalOptions = {}) {
+   async getCollectionProducts(id:string, options:ProductRetrievalOptions = {}): Promise<ProductDTO[]|null> {
       // returns an array of product objects on success
       let base = `/store/products?collection_id[]=${id}`
       const queryString = this.buildQuery(base, options)
@@ -237,7 +245,7 @@ export class MedusaClient {
          .catch(() => null)
    }
 
-   async getProduct(handle:string) {
+   async getProduct(handle:string): Promise<ProductDTO|null> {
       // returns a product object on success
       let product = await this.query({}, `/store/products?handle=${handle}`)
          .then((res:any) => res.json()).then((data:any) => data.products[0])
@@ -297,6 +305,7 @@ export class MedusaClient {
          cart = await this.query(locals, `/store/carts/${locals.cartid}`)
             .then((res:any) => res.json()).then((data:any) => data.cart)
             .catch(() => null)
+         if (cart.completed_at) cart = null
       } else if (this.persistentCart && locals.user) {
          cart = await this.query(locals, `/store/customers/me/cart`)
             .then((res:any) => res.json()).then((data:any) => data.cart)
