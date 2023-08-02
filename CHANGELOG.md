@@ -1,6 +1,6 @@
 # Change Log
 
-## 1.13.1
+## 1.13.2
 
 ### Patch Changes
 
