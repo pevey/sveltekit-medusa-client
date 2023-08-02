@@ -17,6 +17,10 @@ This client is designed to be used on the server.  It cannot be exported to the 
 
 One of the benefits of newer frameworks like SvelteKit is that they combine the fluid user experience of client-side reactivity with the ability to handle logic on the server when you choose to.  Keeping your Medusa backend firewalled and accessible only to your storefront application server provides an additional layer of security versus having your backend directly exposed.  This type of deployment also allows us to use tools like Turnstile or reCAPTCHA to provide some protection against bots and brute force attacks.  Without firewalling your backend, it would not be of much use to implement turnstile protection on your frontend.  It could easily be bypassed.
 
+## Example Project
+
+You can view an example project using this client library [here](https://github.com/pevey/sveltekit-medusa-starter).
+
 ## Installation
 
 Create a new SvelteKit app if needed.  Then, install this package.

@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.13.1
+
+### Patch Changes
+
+- Update User interface to make phone property optional
+
 ## 1.13.0
 
 ### Patch Changes
