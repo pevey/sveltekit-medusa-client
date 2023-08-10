@@ -107,7 +107,7 @@ export const load = async function () {
 
 ## Client Options
 
-A number of options give some flexibility to the client.  The options object that can be injected in the client contructor take this shape:
+A number of options give some flexibility to the client.  The options object that can be injected in the client contructor takes this shape:
 
 ```ts
 interface ClientOptions {
