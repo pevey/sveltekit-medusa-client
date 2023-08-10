@@ -4,5 +4,6 @@ src
 .DS_Store
 jsconfig.json
 package-lock.json
+yarn.lock
 svelte.config.js
 vite.config.js
