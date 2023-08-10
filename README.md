@@ -146,13 +146,13 @@ export default new MedusaClient(MEDUSA_BACKEND_URL, {
 
 - `timeout` - The default is 8000, or 8 seconds.  The length of time to wait for a response before aborting 
 - `retry` - The default is 3.  The number of times to retry a timed out request
-- `headers` - The default is null.  An object of HTTP headers, as many as you want, which will be added to all requests sent to the backed.  This can be useful in many situations.  If you would like to access a server behind a proxy with bearer auth, you can pass the auth header in this property.  You can also pass Cloudflare Access service auth credentials, as in the example above.
+- `headers` - The default is undefined.  An object of HTTP headers, as many as you want, which will be added to all requests sent to the backed.  This can be useful in many situations.  If you would like to access a server behind a proxy with bearer auth, you can pass the auth header in this property.  You can also pass Cloudflare Access service auth credentials, as in the example above.
 - `persistentCart` - The default is false.  If true, the client will expect an endpoint at `/store/customers/me/cart` that will return the customer's cart.  For now, this endpoint is not included in the Medusa core and must be added.
 - `debug` - The default is false.  If true, will log requests and responses to/from the Medusa backend for a better developer experience.
 - `logger` - The default is `console`.  You can inject your own logger instance if you already have one configured in the application.  For instance, a winston logger instance.  Any logger that implements the `info()` and `error()` methods should work.
-- `logFormat` - The default is json.  You can change to 'text' if you are a masochist or need to for some reason.
+- `logFormat` - The default is json.  You can change to 'text' if you need to for some reason.
 - `excludedPaths` - The default is ['/store/auth'].  An array of strings that should be checked to exclude paths from logging.  The default can be added to, but not overridden.  Requests to URIs on your medusa backend that contain one or more of these strings will not be logged.  
-- limitedPaths - The default is null.  An array of strings that should be checked to reduce logging details when logging.  Requests to URIs on your medusa backend that contain one or more of these strings will not log request or response content, only metadata.  The url of the request will be logged, but not query params. To enable limited logging for all paths for more concise logging, use and array that contains the root path (['/']).
+- `limitedPaths` - The default is undefined.  An array of strings that should be checked to reduce the level of detail when logging.  Requests to URIs on your medusa backend that contain one or more of these strings will not log request or response content, only metadata.  The url of the request will be logged, but not query params. To enable limited logging for all paths for more concise logging, use an array that contains the root path (['/']).
 
 ## Authentication
 
