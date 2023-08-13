@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- Fix: Bug in 2.0 that caused the login function to return 'true' even though the auth failed and the user was not logged in (session cookie not set).  This bug did not affect access but could cause UX issues in the login flow.
+
 ## 2.0.0
 
 ### Patch Changes

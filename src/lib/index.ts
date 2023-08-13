@@ -2,6 +2,8 @@ import cookie from 'cookie'
 import { SuperFetch } from 'sveltekit-superfetch'
 import type { ProductDTO } from '@medusajs/types'
 import type { Cookies, RequestEvent } from '@sveltejs/kit'
+import { getContext, setContext } from 'svelte'
+import { writable } from 'svelte/store'
 
 export interface ProductRetrievalOptions {
    limit?: number
@@ -229,22 +231,13 @@ export class MedusaClient {
    }
 
    async login(locals:App.Locals, cookies:Cookies, email:string, password:string) {
-      // returns true or false based on success
-      // const response = await this.query({
-      //    locals, 
-      //    path: '/store/auth', 
-      //    method: 'POST', 
-      //    body: { email, password }
-      // })
-      // if (!response || !response.ok) return false
-      // return await this.parseAuthCookie(response?.headers?.getSetCookie(), locals, cookies).catch(() => false)
       return await this.query({
          locals, 
          path: '/store/auth', 
          method: 'POST', 
          body: { email, password }
       }).then((response:any) => {
-         return this.parseAuthCookie(response.headers.getSetCookie(), locals, cookies)
+         this.parseAuthCookie(response.headers.getSetCookie(), locals, cookies)
       }).catch(() => false)
    }
 
