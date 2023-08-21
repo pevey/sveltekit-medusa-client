@@ -147,8 +147,10 @@ export class MedusaClient {
    async query(options: QueryOptions): Promise<Response|null> {
       const { locals, path, method = 'GET', body = {} } = options
       let headers: any = {}
-      for (const [key, value] of Object.entries(this.headers)) {
-         headers[key] = value
+      if (this.headers) {
+        for (const [key, value] of Object.entries(this.headers)) {
+           headers[key] = value
+        }
       }
       if (locals && locals.sid) {
          headers['Cookie'] = `connect.sid=${locals.sid}`
