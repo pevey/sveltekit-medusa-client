@@ -2,8 +2,9 @@
 
 ## 3.0.0
 
+- Fix: No more ts warning about type mismatch when not using custom headers (by @ellicodan)
 - Chore: Update sveltekit-superfetch dependency to ^3.0
-- Enabled optional caching of product, collection, and search requests
+- Feat: Enabled optional caching of product, collection, and search requests
 
 ## 2.0.2
 
