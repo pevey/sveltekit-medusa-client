@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.0.0
+
+- Chore: Update sveltekit-superfetch dependency to ^3.0
+- Enabled optional caching of product, collection, and search requests
+
 ## 2.0.2
 
 ### Patch Changes

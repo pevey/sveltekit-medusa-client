@@ -2,8 +2,6 @@ import cookie from 'cookie'
 import { SuperFetch } from 'sveltekit-superfetch'
 import type { ProductDTO } from '@medusajs/types'
 import type { Cookies, RequestEvent } from '@sveltejs/kit'
-import { getContext, setContext } from 'svelte'
-import { writable } from 'svelte/store'
 
 export interface ProductRetrievalOptions {
    limit?: number
@@ -79,6 +77,7 @@ export interface ClientOptions {
    timeout?: number
    headers?: {}
    persistentCart?: boolean
+   cache?: boolean
    debug?: boolean
    logger?: Logger
    logFormat?: 'text' | 'json' | 'majel'
@@ -104,6 +103,7 @@ export class MedusaClient {
    private retry: number = 0
    private headers: any
    private persistentCart: boolean = false
+   private cache: boolean = false
    private debug: boolean = false
    private logger: Logger = console
    private logFormat: 'text' | 'json' | 'majel' = 'text'
@@ -114,11 +114,12 @@ export class MedusaClient {
    constructor(url: string, options: ClientOptions = {}) {
       this.url = url
       if (options) {
-         let { timeout, retry, headers, persistentCart, debug, logger, logFormat, excludedPaths, limitedPaths } = options
+         let { timeout, retry, headers, persistentCart, cache, debug, logger, logFormat, excludedPaths, limitedPaths } = options
          if (timeout) this.timeout = timeout
          if (retry) this.retry = retry
          if (headers) this.headers = headers
          if (persistentCart) this.persistentCart = persistentCart
+         if (cache) this.cache = cache
          if (debug) this.debug = debug
          if (logger) this.logger = logger
          if (logFormat) this.logFormat = logFormat
@@ -137,6 +138,7 @@ export class MedusaClient {
          retry: this.retry,
          timeout: this.timeout,
          debug: this.debug,
+         cache: this.cache,
          logger: this.logger,
          logFormat: this.logFormat,
          excludedPaths: this.excludedPaths,

@@ -1,6 +1,6 @@
 {
    "name": "sveltekit-medusa-client",
-   "version": "2.0.2",
+   "version": "3.0.0",
    "description": "A client library for communicating with a Medusa ecommerce backend from a SvelteKit storefront",
    "repository": {
       "type": "git",
@@ -56,8 +56,8 @@
       "vitest": "^0.33.0"
    },
    "dependencies": {
-      "@medusajs/types": "^1.10.0",
-      "sveltekit-superfetch": "^2.0.2"
+      "@medusajs/types": "^1.10.3",
+      "sveltekit-superfetch": "^3.0.0"
    },
    "svelte": "./dist/index.js",
    "types": "./dist/index.d.ts",
