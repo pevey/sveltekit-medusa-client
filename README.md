@@ -110,14 +110,16 @@ export const load = async function () {
 A number of options give some flexibility to the client.  The options object that can be injected in the client contructor takes this shape:
 
 ```ts
-interface ClientOptions {
-   timeout?: number
+export interface ClientOptions {
    retry?: number
+   timeout?: number
    headers?: {}
    persistentCart?: boolean
-   debug?: boolean
+   disableCache?: boolean
+   ttl?: number
    logger?: Logger
    logFormat?: 'text' | 'json' | 'majel'
+   logLevel?: 'verbose' | 'limited' | 'silent'
    excludedPaths?: string[]
    limitedPaths?: string[]
 }
@@ -129,16 +131,18 @@ For example, you can create a new client instance like this:
 import { MedusaClient } from 'sveltekit-medusa-client'
 import { MEDUSA_BACKEND_URL, CLOUDFLARE_ACCESS_ID, CLOUDFLARE_ACCESS_SECRET } from '$env/static/private'
 export default new MedusaClient(MEDUSA_BACKEND_URL, { 
-   timeout: 3000,
+   timeout: 3000, // 3 seconds
    retry: 0,
    headers: {
       'CF-Access-Client-Id': CLOUDFLARE_ACCESS_ID,
       'CF-Access-Client-Secret': CLOUDFLARE_ACCESS_SECRET,
    },
    persistentCart: true,
-   debug: true,
+   disableCache: false, // search results, products, and categories will be cached
+   ttl: 1000, // 1 second, max age of cache
    logger: console,
    logFormat: 'json',
+   logLevel: 'verbose',
    excludedPaths: ['/store/cart','store/mycustomroute'],
    limitedPaths: ['/']
 })
@@ -148,7 +152,6 @@ export default new MedusaClient(MEDUSA_BACKEND_URL, {
 - `retry` - The default is 3.  The number of times to retry a timed out request
 - `headers` - The default is undefined.  An object of HTTP headers, as many as you want, which will be added to all requests sent to the backend.  This can be useful in many situations.  If you would like to access a server behind a proxy with bearer auth, you can pass the auth header in this property.  You can also pass Cloudflare Access service auth credentials, as in the example above.
 - `persistentCart` - The default is false.  If true, the client will expect an endpoint at `/store/customers/me/cart` that will return the customer's cart.  For now, this endpoint is not included in the Medusa core and must be added.
-- `debug` - The default is false.  If true, will log requests and responses to/from the Medusa backend for a better developer experience.
 - `logger` - The default is `console`.  You can inject your own logger instance if you already have one configured in the application.  For example, a winston logger instance.  Any logger that implements the `info()` and `error()` methods should work.
 - `logFormat` - The default is json.  You can change to 'text' if you need to for some reason.
 - `excludedPaths` - The default is ['/store/auth'].  An array of strings that should be checked to exclude paths from logging.  The default can be added to, but not overridden.  Requests to URIs on your medusa backend that contain one or more of these strings will not be logged.  
