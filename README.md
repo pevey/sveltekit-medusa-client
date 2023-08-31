@@ -139,8 +139,8 @@ export default new MedusaClient(MEDUSA_BACKEND_URL, {
    logger: console,
    logFormat: 'json',
    logLevel: 'verbose',
-   excludedPaths: ['/store/cart','store/mycustomroute'],
-   limitedPaths: ['/']
+   excludedPaths: ['/store/mycustomsensitiveroute'],
+   limitedPaths: ['/store/bulkyresponseroute']
 })
 ```
 
@@ -151,7 +151,7 @@ export default new MedusaClient(MEDUSA_BACKEND_URL, {
 - `logger` - The default is `console`.  You can inject your own logger instance if you already have one configured in the application.  For example, a winston logger instance.  Any logger that implements the `info()` and `error()` methods should work.
 - `logFormat` - The default is json.  You can change to 'text' if you need to for some reason.
 - `excludedPaths` - The default is ['/store/auth'].  An array of strings that should be checked to exclude paths from logging.  The default can be added to, but not overridden.  Requests to URIs on your medusa backend that contain one or more of these strings will not be logged.  
-- `limitedPaths` - The default is undefined.  An array of strings that should be checked to reduce the level of detail when logging.  Requests to URIs on your medusa backend that contain one or more of these strings will not log request or response content, only metadata.  The url of the request will be logged, but not query params. To enable limited logging for all paths for more concise logging, use an array that contains the root path (['/']).
+- `limitedPaths` - The default is undefined.  An array of strings that should be checked to reduce the level of detail when logging.  Requests to URIs on your medusa backend that contain one or more of these strings will not log request or response content, only metadata.  The url of the request will be logged, but not query params.
 
 ## Authentication
 
@@ -226,9 +226,9 @@ getReviews(productId:string, options?:ReviewRetrievalOptions, cacheOptions?:Cach
 
 Keys all share one namespace.  If you enable caching on multiple function calls, take care to ensure your keys will always be unique.
 
-### Cache Busting
+### Cache Bypass
 
-To "bust" a cache, you can simply call the function again without a key.
+To bypass the cache and request fresh, you can simply call the function again without a key.
 
 
 
