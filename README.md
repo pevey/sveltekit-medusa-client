@@ -228,7 +228,7 @@ Keys all share one namespace.  If you enable caching on multiple function calls,
 
 ### Cache Bypass
 
-To bypass the cache and request fresh, you can simply call the function again without a key.
+To bypass the cache and request fresh data, you can simply call the function again without a key.
 
 
 
