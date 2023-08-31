@@ -224,7 +224,7 @@ getReviews(productId:string, options?:ReviewRetrievalOptions, cacheOptions?:Cach
 
 ### Make Sure Your Key is Unique
 
-Keys all share one namespace.  If you enable caching on multiple functions, take care to ensure your keys will always be unique.
+Keys all share one namespace.  If you enable caching on multiple function calls, take care to ensure your keys will always be unique.
 
 ### Cache Busting
 
