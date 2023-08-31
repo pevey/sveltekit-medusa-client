@@ -1256,10 +1256,10 @@ svelte@^4.0.5:
     magic-string "^0.30.0"
     periscopic "^3.1.0"
 
-sveltekit-superfetch@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/sveltekit-superfetch/-/sveltekit-superfetch-3.0.0.tgz#60b91455f60db0ed70a5f60d66bf8f02564e1fae"
-  integrity sha512-j0PjJpbWI9oveMNNwq6Sdf2/k9K4wKR2TJyv7aNE75OZ5XojWq7RPmdDDZ6SKQcQb7Wz5+FLtDF47lQmUp2oNA==
+sveltekit-superfetch@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/sveltekit-superfetch/-/sveltekit-superfetch-3.0.1.tgz#c9b8fb8e57908aa6a120ebbac83a764dd098313e"
+  integrity sha512-Cvoolb4Dz0+VX17TC3Ilcn+29uEw59ZcIRyQWeyF+salWTX7iyT/qcJo7sFCFD5hfkvWIMBnQR+WmtcuX1JQzQ==
   dependencies:
     "@isaacs/ttlcache" "^1.4.1"
     nanoid "^4.0.2"

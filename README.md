@@ -115,8 +115,6 @@ export interface ClientOptions {
    timeout?: number
    headers?: {}
    persistentCart?: boolean
-   disableCache?: boolean
-   ttl?: number
    logger?: Logger
    logFormat?: 'text' | 'json' | 'majel'
    logLevel?: 'verbose' | 'limited' | 'silent'
@@ -138,8 +136,6 @@ export default new MedusaClient(MEDUSA_BACKEND_URL, {
       'CF-Access-Client-Secret': CLOUDFLARE_ACCESS_SECRET,
    },
    persistentCart: true,
-   disableCache: false, // search results, products, and categories will be cached
-   ttl: 1000, // 1 second, max age of cache
    logger: console,
    logFormat: 'json',
    logLevel: 'verbose',
@@ -187,3 +183,52 @@ export const load = async function ({ locals, cookies }) {
    }
 }
 ```
+
+## Caching
+
+Caching is enabled by passing a key string in the options for the functions that support caching. The key is the unique identifier for that particular query response.  Optionally, you can also pass a ttl. The ttl is the max age of the cache in milliseconds.  The default ttl is 1000.  
+
+### Caching Example
+
+To enable caching on a call to the getProduct function (`medusa.getProduct(handle)`), call the function like this:
+
+```js
+let product = await medusa.getProduct(handle, { key: `__${params.slug}__product`, ttl: 10000 })
+```
+
+Behind the scenes, the response will be cached in memory for the duration of the ttl.
+
+### Important Notes
+
+- Short cache times are recommended.  Even a short ttl can lead to a significant performance boost in your storefront application and reduction of load on your Medusa backend on high traffic sites.
+
+- The cache is stored in memory.  This is ideal in some scenarios, but not in memory-constrained environments or for especially large sites.
+
+- When deploying to a serverless platform, you will probably want to use something like Redis in your storefront application for caching and forgo the built-in cache option.
+
+### The Cache is a Shared, Server-Side Cache
+
+- Never attempt to cache cart or customer-specific information. Only functions that return data that can be safely shared across customers support cache options.
+
+- The list of functions that support caching:
+
+```js
+getSearchResults(q:string, cacheOptions?:CacheOptions)
+getProducts(options?:ProductRetrievalOptions, cacheOptions?:CacheOptions)
+getCollections(options?:CollectionRetrievalOptions, cacheOptions?:CacheOptions)
+getCollection(handle:string, cacheOptions?:CacheOptions)
+getCollectionProducts(id:string, options?:ProductRetrievalOptions, cacheOptions?:CacheOptions)
+getProduct(handle:string, cacheOptions?:CacheOptions)
+getReviews(productId:string, options?:ReviewRetrievalOptions, cacheOptions?:CacheOptions)
+```
+
+### Make Sure Your Key is Unique
+
+Keys all share one namespace.  If you enable caching on multiple functions, take care to ensure your keys will always be unique.
+
+### Cache Busting
+
+To "bust" a cache, you can simply call the function again without a key.
+
+
+

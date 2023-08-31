@@ -4,6 +4,11 @@ import type { ProductDTO } from '@medusajs/types'
 import type { Cookies, RequestEvent } from '@sveltejs/kit'
 import { dev } from '$app/environment'
 
+export interface CacheOptions {
+   key: string
+   ttl?: number
+}
+
 export interface ProductRetrievalOptions {
    limit?: number
    offset?: number
@@ -79,7 +84,6 @@ export interface ClientOptions {
    headers?: {}
    persistentCart?: boolean
    disableCache?: boolean
-   ttl?: number
    logger?: Logger
    logFormat?: 'text' | 'json' | 'majel'
    logLevel?: 'verbose' | 'limited' | 'silent'
@@ -108,8 +112,6 @@ export class MedusaClient {
    private retry: number = 0
    private headers: any
    private persistentCart: boolean = false
-   private disableCache: boolean = false
-   private ttl: number = 1000
    private logger: Logger = console
    private logFormat: 'text' | 'json' | 'majel' = 'json'
    private logLevel: 'verbose' | 'limited' | 'silent' = (dev)? 'limited' : 'silent'
@@ -117,16 +119,14 @@ export class MedusaClient {
    private limitedPaths: string[] = []
    private superFetch: SuperFetch
 
-   constructor(url: string, options: ClientOptions = {}) {
+   constructor(url: string, options?: ClientOptions) {
       this.url = url
       if (options) {
-         let { timeout, retry, headers, persistentCart, disableCache, ttl, logger, logFormat, logLevel, excludedPaths, limitedPaths } = options
+         let { timeout, retry, headers, persistentCart, logger, logFormat, logLevel, excludedPaths, limitedPaths } = options
          if (timeout) this.timeout = timeout
          if (retry) this.retry = retry
          if (headers) this.headers = headers
          if (persistentCart) this.persistentCart = persistentCart
-         if (disableCache) this.disableCache = disableCache
-         if (ttl) this.ttl = ttl
          if (logger) this.logger = logger
          if (logFormat) this.logFormat = logFormat
          if (logLevel) this.logLevel = logLevel
@@ -144,7 +144,6 @@ export class MedusaClient {
       this.superFetch = new SuperFetch({
          retry: this.retry,
          timeout: this.timeout,
-         ttl: this.ttl,
          logger: this.logger,
          logFormat: this.logFormat,
          logLevel: this.logLevel,
@@ -252,7 +251,8 @@ export class MedusaClient {
          logLevel: 'silent'
       })
       if (!response || !response.ok) return false
-      return await this.parseAuthCookie(response?.headers?.getSetCookie(), locals, cookies).catch(() => false)
+      // @ts-ignore, getSetCookie() is new and not yet in the type definition for Headers, but it is valid
+      return await this.parseAuthCookie(response.headers?.getSetCookie(), locals, cookies).catch(() => false)
    }
 
    async logout(locals:App.Locals, cookies:Cookies) {
@@ -285,54 +285,48 @@ export class MedusaClient {
       }).catch(() => false)
    }
 
-   async getSearchResults(q:string) {
+   async getSearchResults(q:string, cacheOptions?:CacheOptions) {
       // returns an array of hits, if any
       if (!q) { return Array() }
-      let key: string|undefined = (this.disableCache)? undefined: `${q}_search`
       return await this.query({
          path: '/store/products/search',
          method: 'POST',
          body: { q },
-         key
+         ...cacheOptions
       }).then((res:any) => res.json()).then((data:any) => data.hits).catch(() => null)
    }
 
-   async getProducts(options:ProductRetrievalOptions = {}): Promise<ProductDTO[]|null> {
+   async getProducts(options?:ProductRetrievalOptions, cacheOptions?:CacheOptions): Promise<ProductDTO[]|null> {
       // returns an array of product objects
-      let key: string|undefined = (this.disableCache)? undefined: 'all_products'
       const queryString = this.buildQuery('/store/products', options)
-      return await this.query({ path: queryString, key })
+      return await this.query({ path: queryString, ...cacheOptions })
       .then((res:any) => res.json()).then((data:any) => data.products).catch(() => null)
    }
 
-   async getCollections(options:CollectionRetrievalOptions = {}) {
+   async getCollections(options?:CollectionRetrievalOptions, cacheOptions?:CacheOptions) {
       // returns an array of collection objects on success
-      let key: string|undefined = (this.disableCache)? undefined: 'all_collections'
       const queryString = this.buildQuery('/store/collections', options)
-      return await this.query({ path: queryString, key })
+      return await this.query({ path: queryString, ...cacheOptions })
       .then((res:any) => res.json()).then((data:any) => data.collections).catch(() => null)
    }
 
-   async getCollection(handle:string) {
+   async getCollection(handle:string, cacheOptions?:CacheOptions) {
       // returns a collection object on success
-      let key: string|undefined = (this.disableCache)? undefined: `${handle}_collection`
-      return await this.query({ path: `/store/collections?handle[]=${handle}`, key })
+      return await this.query({ path: `/store/collections?handle[]=${handle}`, ...cacheOptions })
       .then((res:any) => res.json()).then((data:any) => data.collections[0]).catch(() => null)
    }
 
-   async getCollectionProducts(id:string, options:ProductRetrievalOptions = {}): Promise<ProductDTO[]|null> {
+   async getCollectionProducts(id:string, options?:ProductRetrievalOptions, cacheOptions?:CacheOptions): Promise<ProductDTO[]|null> {
       // returns an array of product objects on success
-      let key: string|undefined = (this.disableCache)? undefined: `${id}_products`
       let base = `/store/products?collection_id[]=${id}`
       const queryString = this.buildQuery(base, options)
-      return await this.query({ path: queryString, key })
+      return await this.query({ path: queryString, ...cacheOptions })
       .then((res:any) => res.json()).then((data:any) => data.products).catch(() => null)
    }
 
-   async getProduct(handle:string): Promise<ProductDTO|null> {
+   async getProduct(handle:string, cacheOptions?:CacheOptions): Promise<ProductDTO|null> {
       // returns a product object on success
-      let key: string|undefined = (this.disableCache)? undefined: `${handle}_product`
-      let product = await this.query({ path: `/store/products?handle=${handle}`, key })
+      let product = await this.query({ path: `/store/products?handle=${handle}`, ...cacheOptions })
       .then((res:any) => res.json()).then((data:any) => data.products[0]).catch(() => null)
       if (!product) { return null }
       for (let option of product.options) {
@@ -341,16 +335,15 @@ export class MedusaClient {
       return product
    }
 
-   async getReviews(productId:string, options:ReviewRetrievalOptions = {}) {
+   async getReviews(productId:string, options?:ReviewRetrievalOptions, cacheOptions?:CacheOptions) {
       // returns an array of review objects on success
       // options - page = 1, limit = 10, sort = 'created_at', order = 'desc', search = null
       // TODO: handle options
-      let key: string|undefined = (this.disableCache)? undefined: `${productId}_reviews`
-      return await this.query({ path: `/store/products/${productId}/reviews`, key })
+      return await this.query({ path: `/store/products/${productId}/reviews`, ...cacheOptions })
       .then((res:any) => res.json()).then((data:any) => data.product_reviews).catch(() => null)
    }
 
-   async getCustomerReviews(locals:App.Locals, options:ReviewRetrievalOptions = {}) {
+   async getCustomerReviews(locals:App.Locals, options?:ReviewRetrievalOptions) {
       // returns an array of review objects on success
       // options - page = 1, limit = 10, sort = 'created_at', order = 'desc', search = null
       // TODO: handle options

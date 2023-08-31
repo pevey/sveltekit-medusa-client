@@ -1,6 +1,32 @@
 # Change Log
 
+## 3.1.0
+
+### Patch Changes
+
+- Caching API change:  Caching is no longer set at the client/class level.  Caching is now enabled by passing a key string in the options for particular functions that support caching. The key is the unique identifier for that particular query response.  Optionally, you can also pass a ttl. The ttl is the max age of the cache in milliseconds.  The default ttl is 1000.  See the latest README for more information.
+
+The list of functions that support caching:
+
+```js
+getSearchResults(q:string, cacheOptions?:CacheOptions)
+getProducts(options?:ProductRetrievalOptions, cacheOptions?:CacheOptions)
+getCollections(options?:CollectionRetrievalOptions, cacheOptions?:CacheOptions)
+getCollection(handle:string, cacheOptions?:CacheOptions)
+getCollectionProducts(id:string, options?:ProductRetrievalOptions, cacheOptions?:CacheOptions)
+getProduct(handle:string, cacheOptions?:CacheOptions)
+getReviews(productId:string, options?:ReviewRetrievalOptions, cacheOptions?:CacheOptions)
+```
+
+Example: To enable caching for the getProduct function (`medusa.getProduct(handle)`), call the function like this:
+
+```js
+let product = await medusa.getProduct(handle, { key: `${params.slug}_product`, ttl: 10000 })
+```
+
 ## 3.0.0
+
+### Patch Changes
 
 - Fix: No more ts warning about type mismatch when not using custom headers (by @ellicodan)
 - Chore: Update sveltekit-superfetch dependency to ^3.0
