@@ -230,7 +230,7 @@ Keys all share one namespace.  If you enable caching on multiple function calls,
 
 To bypass the cache and request fresh data, you can simply call the function again without a key.
 
-## Cache Bust
+### Cache Bust
 
 To cause the query to pull fresh data, cache the new data, and update the ttl, include `revalidate: true` in the cache options.  Example:
 
