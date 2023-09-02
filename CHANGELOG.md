@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.1
+
+### Patch Changes
+
+- Added cache option: revalidate  If a cache key is passed and revalidate is set to true, this will cause the query to pull fresh data, cache the new data, and update the ttl.
+
 ## 3.1.0
 
 ### Patch Changes

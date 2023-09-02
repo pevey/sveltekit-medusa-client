@@ -98,6 +98,7 @@ export interface QueryOptions {
    body?: object
    key?: string
    ttl?: number
+   revalidate?: boolean
    logLevel?: 'verbose' | 'limited' | 'silent'
 }
 

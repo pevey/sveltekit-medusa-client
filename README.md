@@ -193,7 +193,7 @@ Caching is enabled by passing a key string in the options for the functions that
 To enable caching on a call to the getProduct function (`medusa.getProduct(handle)`), call the function like this:
 
 ```js
-let product = await medusa.getProduct(handle, { key: `__${params.slug}__product`, ttl: 10000 })
+let product = await medusa.getProduct(handle, { key: `__${handle}__product`, ttl: 10000 })
 ```
 
 Behind the scenes, the response will be cached in memory for the duration of the ttl.
@@ -229,6 +229,18 @@ Keys all share one namespace.  If you enable caching on multiple function calls,
 ### Cache Bypass
 
 To bypass the cache and request fresh data, you can simply call the function again without a key.
+
+## Cache Bust
+
+To cause the query to pull fresh data, cache the new data, and update the ttl, include `revalidate: true` in the cache options.  Example:
+
+```js
+let product = await medusa.getProduct(handle, { 
+   key: `__${handle}__product`, 
+   ttl: 10000,
+   revalidate: true
+})
+```
 
 
 
