@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.2
+
+### Patch Changes
+
+- Removed client option 'disableCache' from interface definition to avoid confuction since it is no longer used.  Cache is not enabled by default and is instead enabled when a function is called for that specific function call.
+
 ## 3.1.1
 
 ### Patch Changes

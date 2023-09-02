@@ -83,7 +83,6 @@ export interface ClientOptions {
    timeout?: number
    headers?: {}
    persistentCart?: boolean
-   disableCache?: boolean
    logger?: Logger
    logFormat?: 'text' | 'json' | 'majel'
    logLevel?: 'verbose' | 'limited' | 'silent'
