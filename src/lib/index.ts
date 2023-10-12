@@ -190,7 +190,7 @@ export class MedusaClient {
       return queryString
    }
 
-   async handleRequest(event:RequestEvent) {
+   async handleRequest(event:RequestEvent): Promise<RequestEvent> {
       // this middleware function is called by src/hooks.server.ts or src/hooks.server.js
 
       event.locals.sid = event.cookies.get('sid')
