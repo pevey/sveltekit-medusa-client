@@ -46,6 +46,7 @@
       "@sveltejs/adapter-auto": "^2.0.0",
       "@sveltejs/kit": "^1.25.0",
       "@sveltejs/package": "^2.2.2",
+      "cookie": "^0.6.0",
       "publint": "^0.2.2",
       "shx": "^0.3.4",
       "svelte": "^4.2.1",
