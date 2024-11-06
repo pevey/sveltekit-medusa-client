@@ -163,14 +163,18 @@ export class MedusaClient {
       if (locals && locals.sid) {
          headers['Cookie'] = `connect.sid=${locals.sid}`
       }
-      if (Object.keys(body).length != 0) {
-         headers['Content-Type'] = 'application/json'
+      let requestBody: any = null;
+      if (body instanceof FormData) {
+          requestBody = body;
+      } else if (Object.keys(body).length != 0) {
+          headers['Content-Type'] = 'application/json';
+          requestBody = JSON.stringify(body);
       }
       return await this.superFetch.query({
          url: `${this.url}${path}`,
          method,
          headers,
-         body: (Object.keys(body).length != 0) ? JSON.stringify(body) : null,
+         body: requestBody,
          ...rest
       }).catch((e: Error) => {
          console.log(e)
